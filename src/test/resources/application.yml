@@ -1,0 +1,29 @@
+# Testes não dependem do Eureka nem de rede de descoberta
+spring:
+  application:
+    name: techalert-service
+  datasource:
+    url: jdbc:h2:mem:techalert-test;MODE=MYSQL;DB_CLOSE_DELAY=-1;DATABASE_TO_LOWER=TRUE
+    driver-class-name: org.h2.Driver
+    username: sa
+    password:
+  jpa:
+    open-in-view: false
+    hibernate:
+      ddl-auto: validate
+  flyway:
+    enabled: true
+  cloud:
+    service-registry:
+      auto-registration:
+        enabled: false
+
+eureka:
+  client:
+    enabled: false
+
+techalert:
+  cidade-padrao: Santos
+  open-meteo:
+    geocoding-url: https://geocoding-api.open-meteo.com
+    forecast-url: https://api.open-meteo.com
