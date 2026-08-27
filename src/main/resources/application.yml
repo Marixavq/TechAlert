@@ -1,0 +1,52 @@
+# Nome no Eureka diferente do artifact Maven (techalert)
+spring:
+  application:
+    name: techalert-service
+  datasource:
+    # Banco em memória para o checkpoint; Flyway cria o schema na subida
+    url: jdbc:h2:mem:techalert;MODE=MYSQL;DB_CLOSE_DELAY=-1;DATABASE_TO_LOWER=TRUE
+    driver-class-name: org.h2.Driver
+    username: sa
+    password:
+  h2:
+    console:
+      enabled: true
+      path: /h2-console
+  jpa:
+    open-in-view: false
+    hibernate:
+      # Schema gerenciado pelo Flyway, não pelo Hibernate
+      ddl-auto: validate
+    show-sql: true
+    properties:
+      hibernate:
+        format_sql: true
+  flyway:
+    enabled: true
+    locations: classpath:db/migration
+
+# Porta dedicada deste microsserviço
+server:
+  port: 8085
+  servlet:
+    encoding:
+      charset: UTF-8
+      enabled: true
+      force: true
+
+eureka:
+  instance:
+    hostname: localhost
+    prefer-ip-address: true
+  client:
+    register-with-eureka: true
+    fetch-registry: true
+    service-url:
+      defaultZone: http://localhost:8761/eureka/
+
+techalert:
+  # Usada em GET /api/alertas quando a query cidade não é enviada
+  cidade-padrao: Santos
+  open-meteo:
+    geocoding-url: https://geocoding-api.open-meteo.com
+    forecast-url: https://api.open-meteo.com
