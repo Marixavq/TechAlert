@@ -5,6 +5,7 @@ Aplicação Java/Spring Boot que consulta APIs REST externas (Open-Meteo), conve
 # Integrantes
 
 Júlia Tiziotto Buttler, 564975, 2TDSA
+
 Mariana Xavier Quispe, 566357, 2TDSA
 
 ## API externa
