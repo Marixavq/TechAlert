@@ -2,6 +2,11 @@
 
 Aplicação Java/Spring Boot que consulta APIs REST externas (Open-Meteo), converte o JSON em DTOs, classifica o clima em alerta operacional para a equipe de TI e expõe o resultado em uma API REST própria.
 
+# Integrantes
+
+Júlia Tiziotto Buttler, 564975, 2TDSA
+Mariana Xavier Quispe, 566357, 2TDSA
+
 ## API externa
 
 **Nome da API:** Open-Meteo  
@@ -122,24 +127,104 @@ Níveis gerados a partir do `weathercode` da Open-Meteo (e reforçados por tempe
 }
 ```
 
-## Como executar
+## Como executar e testar
 
-Requisitos: JDK 21 e Maven (ou o wrapper `mvnw`).
+### Requisitos
+
+- JDK 21
+- Conexão com a internet (a aplicação consulta a Open-Meteo em tempo real)
+- Maven ou o wrapper `mvnw` incluído no projeto
+
+### Subir a aplicação
+
+**Opção 1 — Terminal**
+
+No Linux/macOS:
 
 ```bash
 ./mvnw spring-boot:run
 ```
 
-No Windows:
+No Windows (PowerShell), use `.\` na frente do comando:
 
-```bash
-mvnw.cmd spring-boot:run
+```powershell
+.\mvnw.cmd spring-boot:run
 ```
 
-A aplicação sobe na porta **8085**, com nome Eureka `techalert-service` (diferente do artifact Maven `techalert`). Se o Eureka em `http://localhost:8761` não estiver no ar, a API REST continua respondendo; o client apenas registra retry em log.
+**Opção 2 — IDE**
 
-Console H2: `http://localhost:8085/h2-console`  
-JDBC URL: `jdbc:h2:mem:techalert`
+Abra `TechalertApplication.java` e execute com **Run**. Deixe o processo rodando enquanto testa.
+
+### Como saber que subiu
+
+Espere no log a mensagem:
+
+```text
+Started TechalertApplication
+```
+
+A API fica disponível em: **http://localhost:8085**
+
+> **Importante:** rode apenas **uma** instância por vez (terminal **ou** IDE). Não execute os dois ao mesmo tempo.
+
+### Porta 8085 já em uso
+
+Se aparecer `Port 8085 was already in use`, a aplicação **já está rodando** em outro terminal ou na IDE.
+
+Nesse caso, **não precisa subir de novo**. Teste direto os endpoints abaixo.
+
+Se quiser reiniciar do zero no Windows:
+
+```powershell
+netstat -ano | findstr :8085
+taskkill /PID <numero_do_pid> /F
+.\mvnw.cmd spring-boot:run
+```
+
+### Eureka (opcional — não é requisito do checkpoint)
+
+O projeto está configurado para se registrar no Eureka (`techalert-service`), mas o **servidor Eureka é outro serviço** (geralmente em `http://localhost:8761`).
+
+Se o Eureka **não** estiver ligado:
+
+- a API REST do TechAlert **continua funcionando normalmente**;
+- podem aparecer warnings de `Connection refused` no log — isso é esperado e pode ser ignorado para este trabalho.
+
+O checkpoint exige os endpoints `/api/alertas` e `/api/health`, não o Eureka.
+
+### Como testar
+
+Use o **navegador** ou um **cliente REST** (Insomnia, Postman, Thunder Client). Não é necessário Swagger.
+
+Abra estas URLs (copie sem crases ou espaços no final):
+
+| Teste | URL |
+|---|---|
+| Health check | http://localhost:8085/api/health |
+| Consulta com query param | http://localhost:8085/api/alertas?cidade=Santos |
+| Consulta com path param | http://localhost:8085/api/alertas/Campinas |
+| Cidade padrão (Santos) | http://localhost:8085/api/alertas |
+| Cidade inexistente (404) | http://localhost:8085/api/alertas/CidadeQueNaoExiste123 |
+
+**Respostas esperadas:**
+
+- `/api/health` → `{"status":"UP","application":"TechAlert"}`
+- `/api/alertas?cidade=Santos` → JSON com `cidade`, `temperatura`, `condicao`, `nivel`, `mensagem` e `fonte: "Open-Meteo"`
+- cidade inexistente → HTTP 404 com mensagem em português
+
+Cada consulta bem-sucedida em `/api/alertas` incrementa o campo `id` na resposta, indicando que o registro foi persistido no banco H2 em memória.
+
+### Testes automatizados
+
+```bash
+./mvnw test
+```
+
+No Windows:
+
+```powershell
+.\mvnw.cmd test
+```
 
 ## Fluxo da consulta
 
